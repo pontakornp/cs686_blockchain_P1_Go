@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"golang.org/x/crypto/sha3"
-	//"reflect"
+	"reflect"
 )
 
 type Flag_value struct {
@@ -60,22 +60,26 @@ func compact_encode(hex_array []uint8) []uint8 {
 
 // If Leaf, ignore 16 at the end
 func compact_decode(encoded_arr []uint8) []uint8 {
-	// TODO
 	hex_array := []uint8{}
 	for i := 0; i < len(encoded_arr); i++ {
-		hex_array = append(hex_array, encoded_arr[i]/16)
-		hex_array = append(hex_array, encoded_arr[i]%16)
+		hex_array = append(hex_array, encoded_arr[i] / 16)
+		hex_array = append(hex_array, encoded_arr[i] % 16)
 	}
-
-	return []uint8{}
+	if hex_array[0] == 0 || hex_array[0] == 2 {
+		hex_array = hex_array[2:]
+	} else {
+		hex_array = hex_array[1:]
+	}
+	return hex_array
 }
 
 func Test_compact_encode() {
-	//fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
-	//fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
-	//fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
-	//fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
-	fmt.Println("", compact_encode([]uint8{2, 6, 3, 16}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
+	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
+	//fmt.Println("", compact_encode([]uint8{2, 6, 3, 16}))
+	//fmt.Println("", compact_decode(compact_encode([]uint8{2, 6, 3, 16})))
 }
 
 func (node *Node) hash_node() string {
