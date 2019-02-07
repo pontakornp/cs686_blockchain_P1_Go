@@ -9,7 +9,7 @@ import (
 )
 
 type Flag_value struct {
-	encoded_prefix []uint8
+	encoded_prefix []uint8 // shared nibble(s) for ext node or key for leaf node
 	value string // hash node or value of leaf
 }
 
@@ -29,7 +29,6 @@ type MerklePatriciaTrie struct {
 }
 
 func (mpt *MerklePatriciaTrie) Get(key string) string {
-	// TODO
 	hex_key, err := hex.DecodeString(key)
 	if err != nil {
 		log.Fatal(err)
@@ -48,18 +47,35 @@ func (mpt *MerklePatriciaTrie) Get(key string) string {
 		if node_type == 0 { // null node
 			return ""
 		} else if node_type == 1 { // branch node
-			if len(hex_key) == 1 && node.branch_value[len(node.branch_value) - 1] != ""{
-				return node.branch_value[len(node.branch_value) - 1]
+			// if hex_key is empty string check if value exists
+			// if yes, return value,
+			// if not, return empty string
+			if hex_key == nil || len(hex_key) == 0 {
+				tempValue := node.branch_value[len(node.branch_value) - 1]
+				if tempValue != "" {
+					return tempValue
+				} else {
+					return ""
+				}
 			}
-			hash_node = node.branch_value[hex_key[0]]
-			if hash_node == "" {
+			// update hash_node
+			tempValue := node.branch_value[hex_key[0]]
+			if tempValue != "" {
+				hash_node = tempValue
+			} else {
 				return ""
 			}
-			hex_key = hex_key[1:]
+			// if hex_key has one character left, update hex_key to nil
+			// if hex_key has more than one character, remove the first ele
+			if len(hex_key) == 1 {
+				hex_key = nil
+			} else {
+				hex_key = hex_key[1:]
+			}
 		} else { // node_type == 2, ext or leaf node
-			encoded_arr := node.flag_value.encoded_prefix
-			decoded_arr := compact_decode(encoded_arr)
-			boo := isLeafNode(encoded_arr)
+			encoded_arr := node.flag_value.encoded_prefix // encoded_prefix
+			decoded_arr := compact_decode(encoded_arr) // decode ascii prefix to hex string
+			boo := isLeafNode(encoded_arr) // if left, true else false
 			if boo { // leaf node
 				if len(hex_key) == len(decoded_arr) {
 					for i := 0; i < len(decoded_arr); i++ {
@@ -69,17 +85,32 @@ func (mpt *MerklePatriciaTrie) Get(key string) string {
 					}
 					return node.flag_value.value
 				}
+				return ""
 			} else { // extension node
+				// if hex_key length is less than key of the node, return empty string
 				if len(hex_key) < len(decoded_arr) {
 					return ""
 				}
+				// if hex_key length is equal to or more than the key of the node
+				// loop through each character of node key
+				// if any character does not match, return empty string
 				for i := 0; i < len(decoded_arr); i++ {
 					if hex_key[i] != decoded_arr[i] {
 						return ""
 					}
 				}
-				hex_key = hex_key[len(hex_key) - len(decoded_arr):]
+				//if the remaining key length is equal to zero, then set hex_key to nil
+				remaining_len := len(hex_key) - len(decoded_arr)
+				if remaining_len == 0 {
+					hex_key = nil
+				} else { // if the remaining key length is more than zero
+					hex_key = hex_key[remaining_len:]
+				}
 				hash_node = node.flag_value.value
+				// if value of the next hash node is empty then return empty string
+				if hash_node == "" {
+					return ""
+				}
 			}
 		}
 	}
