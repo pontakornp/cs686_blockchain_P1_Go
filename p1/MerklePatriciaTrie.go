@@ -4,18 +4,23 @@ import (
 	"encoding/hex"
 	"fmt"
 	"golang.org/x/crypto/sha3"
+	"log"
 	"reflect"
 )
 
 type Flag_value struct {
 	encoded_prefix []uint8
-	value string
+	value string // hash node or value of leaf
 }
 
 type Node struct {
 	node_type int // 0: Null, 1: Branch, 2: Ext or Leaf
 	branch_value [17]string
 	flag_value Flag_value
+}
+
+func isEmpty(node Node) bool {
+	return reflect.DeepEqual(node, nil)
 }
 
 type MerklePatriciaTrie struct {
@@ -25,6 +30,59 @@ type MerklePatriciaTrie struct {
 
 func (mpt *MerklePatriciaTrie) Get(key string) string {
 	// TODO
+	hex_key, err := hex.DecodeString(key)
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
+	if(len(mpt.db) == 0 || mpt.root == "") {
+		return ""
+	}
+	hash_node := mpt.root
+	for hash_node != "" {
+		node := mpt.db[hash_node]
+		if isEmpty(node) {
+			return ""
+		}
+		node_type := node.node_type
+		if node_type == 0 { // null node
+			return ""
+		} else if node_type == 1 { // branch node
+			if len(hex_key) == 1 && node.branch_value[len(node.branch_value) - 1] != ""{
+				return node.branch_value[len(node.branch_value) - 1]
+			}
+			hash_node = node.branch_value[hex_key[0]]
+			if hash_node == "" {
+				return ""
+			}
+			hex_key = hex_key[1:]
+		} else { // node_type == 2, ext or leaf node
+			encoded_arr := node.flag_value.encoded_prefix
+			decoded_arr := compact_decode(encoded_arr)
+			boo := isLeafNode(encoded_arr)
+			if boo { // leaf node
+				if len(hex_key) == len(decoded_arr) {
+					for i := 0; i < len(decoded_arr); i++ {
+						if hex_key[i] != decoded_arr[i] {
+							return ""
+						}
+					}
+					return node.flag_value.value
+				}
+			} else { // extension node
+				if len(hex_key) < len(decoded_arr) {
+					return ""
+				}
+				for i := 0; i < len(decoded_arr); i++ {
+					if hex_key[i] != decoded_arr[i] {
+						return ""
+					}
+				}
+				hex_key = hex_key[len(hex_key) - len(decoded_arr):]
+				hash_node = node.flag_value.value
+			}
+		}
+	}
 	return ""
 }
 
@@ -73,12 +131,20 @@ func compact_decode(encoded_arr []uint8) []uint8 {
 	return hex_array
 }
 
+func isLeafNode(encoded_arr []uint8) bool {
+	prefix := encoded_arr[0] / 16
+	if prefix == 0 || prefix == 1 {
+		return false
+	}
+	return true
+}
+
 func Test_compact_encode() {
 	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
 	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
 	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
 	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
-	//fmt.Println("", compact_encode([]uint8{2, 6, 3, 16}))
+	fmt.Println("", compact_encode([]uint8{2, 6, 3, 16}))
 	//fmt.Println("", compact_decode(compact_encode([]uint8{2, 6, 3, 16})))
 }
 
