@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"golang.org/x/crypto/sha3"
-	"reflect"
+	//"reflect"
 )
 
 type Flag_value struct {
@@ -37,21 +37,42 @@ func (mpt *MerklePatriciaTrie) Delete(key string) {
 }
 
 func compact_encode(hex_array []uint8) []uint8 {
-	// TODO
-	return []uint8{}
+	term := false
+	if hex_array[len(hex_array) - 1] == 16 {
+		term = true
+	}
+	if term {
+		hex_array = hex_array[:len(hex_array) - 1]
+	}
+	var odd_len int = len(hex_array) % 2
+	var flags uint8 = uint8(2 * odd_len + 1)
+	if(odd_len == 1) {
+		hex_array  = append([]uint8{flags}, hex_array...)
+	}
+	o := []uint8{}
+	for i := 0; i < len(hex_array); i+=2 {
+		o = append(o, 16 * hex_array[i] + hex_array[i + 1])
+	}
+	return o
 }
 
 // If Leaf, ignore 16 at the end
 func compact_decode(encoded_arr []uint8) []uint8 {
 	// TODO
+	hex_array := []uint8{}
+	for i := 0; i < len(encoded_arr); i++ {
+		hex_array = append(hex_array, encoded_arr[i]/16)
+		hex_array = append(hex_array, encoded_arr[i]%16)
+	}
 	return []uint8{}
 }
 
-func test_compact_encode() {
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
-	fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
+func Test_compact_encode() {
+	//fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{1, 2, 3, 4, 5})), []uint8{1, 2, 3, 4, 5}))
+	//fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 1, 2, 3, 4, 5})), []uint8{0, 1, 2, 3, 4, 5}))
+	//fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{0, 15, 1, 12, 11, 8, 16})), []uint8{0, 15, 1, 12, 11, 8}))
+	//fmt.Println(reflect.DeepEqual(compact_decode(compact_encode([]uint8{15, 1, 12, 11, 8, 16})), []uint8{15, 1, 12, 11, 8}))
+	fmt.Println("", compact_encode([]uint8{2, 6, 3}))
 }
 
 func (node *Node) hash_node() string {
