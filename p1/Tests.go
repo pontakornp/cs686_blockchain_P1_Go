@@ -102,10 +102,18 @@ func Test_Insert() {
 	//fmt.Println(mpt.Get("b"))
 
 	//case 10
-	mpt.Insert("a", "10")
+	//mpt.Insert("a", "10")
+	//mpt.Insert("p", "20")
+	//fmt.Println(mpt.Get( "a"))
+	//fmt.Println(mpt.Get("b"))
+
+	//case 11
+	mpt.Insert("aaaa", "10")
 	mpt.Insert("p", "20")
-	fmt.Println(mpt.Get( "a"))
-	fmt.Println(mpt.Get("b"))
+	mpt.Insert("aab", "30")
+	mpt.Insert("ab", "40")
+	fmt.Println(mpt.Get( "ab"))
+	//fmt.Println(mpt.Get("b"))
 
 	// map len
 	fmt.Println(mpt.Order_nodes())
