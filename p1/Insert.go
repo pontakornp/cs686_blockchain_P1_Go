@@ -129,8 +129,7 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 							delete(mpt.db, hash_node)
 							// update mpt db leaf
 							mpt.db[hash_leaf_nibble_node] = leaf_nibble_node
-							// if path is not empty && nibble is empty
-						} else {
+						} else { // if path is not empty && nibble is empty
 							leaf_path_node := newLeafNode(leaf_path_prefix, new_value)
 							hash_leaf_path_node := leaf_path_node.hash_node()
 							branch_value[path_arr[0]] = hash_leaf_path_node
@@ -170,7 +169,20 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 					return
 				} else if len(path_arr) == match_len && len(nibble_arr) == match_len { // case 2: complete match
 					fmt.Println("Leaf, Complete match")
-					//???????
+					// if new value equal to the current leaf value, return
+					if node.flag_value.value == new_value {
+						return
+					}
+					//update the value to the new one
+					node.flag_value.value = new_value
+					//hash the node
+					hash_leaf_node := node.hash_node()
+					//delete the old leaf node
+					delete(mpt.db, hash_node)
+					//update mpt db
+					mpt.db[hash_leaf_node] = node
+					//update parents
+					mpt.updateParents(node_stack, hash_leaf_node)
 					return
 				} else if len(path_arr) - match_len >= 1 && len(nibble_arr) - match_len >= 1 { // case 3: partial match with extra nibble and extra path
 					fmt.Println("Leaf, Partial match with extra nibble and extra path")
