@@ -42,3 +42,11 @@ func (this *Stack) Push(value interface{}) {
 	this.top = n
 	this.length++
 }
+
+// Return true if the stack is empty, otherwise return false
+func (this *Stack) IsEmpty() bool {
+	if this.length == 0 {
+		return true
+	}
+	return false
+}
