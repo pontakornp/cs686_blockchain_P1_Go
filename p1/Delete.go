@@ -7,7 +7,6 @@ import (
 )
 
 func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
-	// TODO
 	node_stack, error := mpt.GetStack(key)
 	if error != nil {
 		return "", error
