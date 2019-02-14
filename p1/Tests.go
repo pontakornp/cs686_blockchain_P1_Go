@@ -108,14 +108,43 @@ func Test_Insert() {
 	//fmt.Println(mpt.Get("b"))
 
 	//case 11
-	mpt.Insert("aaaa", "10")
-	mpt.Insert("p", "20")
-	mpt.Insert("aab", "30")
-	mpt.Insert("ab", "40")
-	fmt.Println(mpt.Get( "ab"))
+	//mpt.Insert("aaaa", "10")
+	//mpt.Insert("p", "20")
+	//mpt.Insert("aab", "30")
+	//mpt.Insert("ab", "40")
+	//fmt.Println(mpt.Get( "ab"))
 	//fmt.Println(mpt.Get("b"))
 
-	// map len
+	//case 12
+	//mpt.Insert("aa", "10")
+	//mpt.Insert("a", "20")
+	////mpt.Insert("aab", "30")
+	////mpt.Insert("ab", "40")
+	//fmt.Println(mpt.Get( "ab"))
+	////fmt.Println(mpt.Get("b"))
+
+	// delete case 13
+	//mpt.Insert("aaaa", "10")
+	//mpt.Insert("p", "20")
+	//mpt.Insert("aaap", "30")
+	//mpt.Insert("ap", "40")
+	//mpt.Delete("ap")
+
+	// delete case 14
+	//mpt.Insert("p", "10")
+	//mpt.Insert("aa", "20")
+	//mpt.Insert("ap", "30")
+	//mpt.Insert("b", "40")
+	//mpt.Delete("b")
+
+	// delete case 14
+	//mpt.Insert("p", "10")
+	//mpt.Insert("aa", "20")
+	//mpt.Insert("ap", "30")
+	//mpt.Insert("ba", "40")
+	//mpt.Delete("ba")
+
+	//map len
 	fmt.Println(mpt.Order_nodes())
 	fmt.Println("Map len", len(mpt.db))
 }

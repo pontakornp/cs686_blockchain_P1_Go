@@ -121,18 +121,13 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 					fmt.Println("Leaf, No match")
 					nibble_value := node.flag_value.value
 					leaf_path_prefix := []uint8{}
-					if len(path_arr) > 1 {
-						leaf_path_prefix = path_arr[1:]
-					}
 					leaf_nibble_prefix := []uint8{}
-					if len(nibble_arr) > 1 {
-						leaf_nibble_prefix = nibble_arr[1:]
-					}
 					branch_value := [17]string{}
 					branch_node := newEmptyNode()
 					hash_branch_node := ""
-					// if path and nibble is empty
-					if len(leaf_nibble_prefix) == 0 && len(leaf_path_prefix) == 0 || len(leaf_nibble_prefix) > 0 && len(leaf_path_prefix) > 0 {
+					if len(path_arr) != 0  && len(nibble_arr) != 0 {
+						leaf_nibble_prefix = nibble_arr[1:]
+						leaf_path_prefix = path_arr[1:]
 						leaf_path_node := newLeafNode(leaf_path_prefix, new_value)
 						leaf_nibble_node := newLeafNode(leaf_nibble_prefix, nibble_value)
 						hash_leaf_path_node := leaf_path_node.hash_node()
@@ -151,8 +146,8 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 						hash_branch_node = branch_node.hash_node()
 					} else {
 						branch_node_val := ""
-						// if nibble is not empty && path is empty
-						if len(leaf_nibble_prefix) != 0 {
+						if len(path_arr) == 0 {
+							leaf_nibble_prefix = nibble_arr[1:]
 							leaf_nibble_node := newLeafNode(leaf_nibble_prefix, nibble_value)
 							hash_leaf_nibble_node := leaf_nibble_node.hash_node()
 							branch_value[nibble_arr[0]] = hash_leaf_nibble_node
@@ -163,7 +158,8 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 							delete(mpt.db, hash_node)
 							// update mpt db leaf
 							mpt.db[hash_leaf_nibble_node] = leaf_nibble_node
-						} else { // if path is not empty && nibble is empty
+						} else if len(nibble_arr) == 0 {
+							leaf_path_prefix = path_arr[1:]
 							leaf_path_node := newLeafNode(leaf_path_prefix, new_value)
 							hash_leaf_path_node := leaf_path_node.hash_node()
 							branch_value[path_arr[0]] = hash_leaf_path_node
@@ -174,6 +170,9 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 							delete(mpt.db, hash_node)
 							// update mpt db leaf
 							mpt.db[hash_leaf_path_node] = leaf_path_node
+						} else {
+							fmt.Println("Bug Found")
+							return
 						}
 						// create 1 branch node
 						branch_node = newBranchNode(branch_value, branch_node_val)
@@ -226,9 +225,6 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 				} else if len(path_arr) - match_len == 0 && len(nibble_arr) - match_len >= 1 { // case 4: partial match with extra nibble only
 					fmt.Println("Leaf, Partial match with extra nibble only")
 					nibble_arr = nibble_arr[match_len:]
-					//for i := 0; i < len(nibble_arr); i++ {
-					//	fmt.Println("Leaf Nibbbbbbb: ", nibble_arr[i])
-					//}
 					nibble_value := node.flag_value.value
 					// create 1 leaf nodes
 					leaf_nibble_prefix := []uint8{}
@@ -239,11 +235,10 @@ func (mpt *MerklePatriciaTrie) Insert(key string, new_value string) {
 					hash_leaf_nibble_node := leaf_nibble_node.hash_node()
 					// create 1 branch node
 					branch_value := [17]string{}
-					branch_value[len(branch_value) - 1] = new_value
 					fmt.Println("branch child value:", new_value)
 					branch_value[nibble_arr[0]] = hash_leaf_nibble_node
 					fmt.Println("leaf2:",nibble_arr[0], nibble_value)
-					branch_node := newBranchNode(branch_value, "")
+					branch_node := newBranchNode(branch_value, new_value)
 					hash_branch_node := branch_node.hash_node()
 					// create 1 extension node
 					ext_node := newExtNode(match_arr, hash_branch_node)

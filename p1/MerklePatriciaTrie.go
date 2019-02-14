@@ -119,6 +119,7 @@ func node_to_string(node Node) string {
 
 func (mpt *MerklePatriciaTrie) Initial() {
 	mpt.db = make(map[string]Node)
+	mpt.root = ""
 }
 
 func is_ext_node(encoded_arr []uint8) bool {
