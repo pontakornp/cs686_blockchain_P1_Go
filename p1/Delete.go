@@ -3,7 +3,6 @@ package p1
 import (
 	"cs686_blockchain_P1_Go/stack"
 	"errors"
-	"fmt"
 )
 
 func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
@@ -24,21 +23,15 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 		delete(mpt.db, hash_node)
 		switch node.node_type {
 		case 0:
-			fmt.Println("Null Node")
 			return "", errors.New("path_not_found")
 		case 1:
-			fmt.Println("Branch Node")
 			branch_value_index := ref.index
-			fmt.Println(branch_value_index)
 			if branch_value_index == 16 {
 				is_merging = true
 			}
 			if !is_merging {
-				fmt.Println("Not Merging")
 				if branch_value_index != 17 {
 					node.branch_value[branch_value_index] = new_hash_node
-				} else {
-					fmt.Println("branch index 17")
 				}
 				//node.branch_value[branch_value_index] = new_hash_node
 				//delete(mpt.db, hash_node)
@@ -50,8 +43,6 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 			// set deleted node to empty string
 			if branch_value_index != 17 {
 				node.branch_value[branch_value_index] = ""
-			} else {
-				fmt.Println("branch index 17")
 			}
 			count := 0
 			//value := ""
@@ -68,7 +59,6 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 			//delete(mpt.db, hash_node)
 			// if there are more than one value under branch node, no need to merge the child
 			if (branch_last_value == "" && count >= 2) || (branch_last_value != "" && count >= 1) {
-				fmt.Println("No merge")
 				// hash branch node
 				hash_branch_node := node.hash_node()
 				// update db
@@ -77,10 +67,7 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 				new_hash_node = hash_branch_node
 				is_merging = false
 			} else { // if there are one value under branch node, merge the branch and child node prefix
-				fmt.Println("Merging")
 				// case when there is one leaf left as branch child
-				fmt.Println(tmp_prefix)
-				//hash_child_node := node.branch_value[tmp_prefix[0]]
 				// set prefix
 				prefix = tmp_prefix
 				if branch_last_value == "" {
@@ -90,7 +77,6 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 					case 0:
 						return "", errors.New("path_not_found")
 					case 1:
-						fmt.Println("Branch child")
 						temp_value = hash_child_node
 						to_create_leaf = false
 					case 2:
@@ -98,10 +84,8 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 						delete(mpt.db, hash_child_node)
 						encoded_prefix := child_node.flag_value.encoded_prefix
 						if isLeafNode(encoded_prefix) {
-							fmt.Println("Leaf child")
 							to_create_leaf = true
 						} else {
-							fmt.Println("Extension child")
 							to_create_leaf = false
 						}
 						// get the prefix and value from the child node
@@ -109,7 +93,6 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 						temp_value = child_node.flag_value.value
 						// combine prefix
 						prefix = append(prefix, child_node_prefix...)
-						fmt.Println(prefix)
 						//// delete child node
 						//delete(mpt.db, hash_child_node)
 					}
@@ -120,7 +103,6 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 						is_merging = false
 					}
 				} else { // case when there is one value at index 16 left in branch node
-					fmt.Println("Branch value at last index")
 					to_create_leaf = true
 					temp_value = node.branch_value[16]
 					//new_hash_node = mpt.mergeNodes(to_create_leaf, prefix, temp_value)
@@ -135,13 +117,11 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 		case 2:
 			encoded_prefix := node.flag_value.encoded_prefix
 			if isLeafNode(encoded_prefix) {
-				fmt.Println("Leaf Node")
 				//// delete the node
 				//delete(mpt.db, hash_node)
 				// update is merging
 				is_merging = true
 			} else {
-				fmt.Println("Extension Node")
 				//delete(mpt.db, hash_node)
 				if !is_merging {
 					node.flag_value.value = new_hash_node
@@ -156,8 +136,6 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 				new_hash_node = mpt.mergeNodes(to_create_leaf, prefix, temp_value)
 				is_merging = false
 			}
-			//ori_prefix := strings.Replace(fmt.Sprint(compact_decode(encoded_prefix)), " ", ", ", -1)
-			//str = fmt.Sprintf("%s<%v, value=\"%s\">", node_name, ori_prefix, node.flag_value.value)
 		}
 	}
 	// if is_merging is true
@@ -166,7 +144,6 @@ func (mpt *MerklePatriciaTrie) Delete(key string) (string, error) {
 	}
 	// update root
 	mpt.root = new_hash_node
-
 	return "", errors.New("path_not_found")
 }
 

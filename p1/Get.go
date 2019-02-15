@@ -3,7 +3,6 @@ package p1
 import (
 	"cs686_blockchain_P1_Go/stack"
 	"errors"
-	"fmt"
 )
 
 // get method for the
@@ -44,15 +43,12 @@ func (mpt *MerklePatriciaTrie) GetStack(key string) (*stack.Stack, error) {
 		return nil, errors.New("No value found, root is empty")
 	}
 	hash_node := mpt.root
-	//fmt.Println(hash_node)
 	for hash_node != "" {
 		node := mpt.db[hash_node]
-		//fmt.Println(node)
 		node_type := node.node_type
 		if isEmpty(node) || node_type == 0 { // null node
 			return nil, errors.New("No value found, node type is 0 or empty")
 		} else if node_type == 1 { // branch node
-			fmt.Println("branch")
 			// if hex_key is empty string check if value exists
 			// if yes, return value,
 			// if not, return empty string
@@ -83,7 +79,6 @@ func (mpt *MerklePatriciaTrie) GetStack(key string) (*stack.Stack, error) {
 				hex_key = hex_key[1:]
 			}
 		} else { // node_type == 2, ext or leaf node
-			fmt.Println("leaf or ext")
 			encoded_arr := node.flag_value.encoded_prefix // encoded_prefix
 			decoded_arr := compact_decode(encoded_arr) // decode ascii prefix to hex string
 			boo := isLeafNode(encoded_arr) // if leaf, true else false
